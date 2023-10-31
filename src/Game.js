@@ -111,29 +111,61 @@ export default class Game {
 
   setKeys() {
     this.keyboardProcessor.getButton("KeyS").executeDown = function () {
-      if (this.keyboardProcessor.isButtonPressed("ArrowDown")) {
+      if (
+        this.keyboardProcessor.isButtonPressed("ArrowDown") &&
+        !this.keyboardProcessor.isButtonPressed("ArrowLeft") &&
+        !this.keyboardProcessor.isButtonPressed("ArrowUp")
+      ) {
         this.#hero.throwDown();
       } else {
         this.#hero.jump();
       }
     };
-    this.keyboardProcessor.getButton("ArrowLeft").executeDown = function () {
+    const arrowLeft = this.keyboardProcessor.getButton("ArrowLeft");
+    arrowLeft.executeDown = function () {
       this.#hero.startLeftMove();
+      this.#hero.setView(this.getArrowButtonContext());
     };
-    this.keyboardProcessor.getButton("ArrowRight").executeDown = function () {
-      this.#hero.startRightMove();
-    };
-    this.keyboardProcessor.getButton("ArrowUp").executeDown = function () {
-      this.#hero.jump();
-    };
-    this.keyboardProcessor.getButton("ArrowUp").executeDown = function () {
-      this.#hero.jump();
-    };
-    this.keyboardProcessor.getButton("ArrowLeft").executeUp = function () {
+    arrowLeft.executeUp = function () {
       this.#hero.stopLeftMove();
+      this.#hero.setView(this.getArrowButtonContext());
     };
-    this.keyboardProcessor.getButton("ArrowRight").executeUp = function () {
+
+    const arrowRight = this.keyboardProcessor.getButton("ArrowRight");
+    arrowRight.executeDown = function () {
+      this.#hero.startRightMove();
+      this.#hero.setView(this.getArrowButtonContext());
+    };
+    arrowRight.executeUp = function () {
       this.#hero.stopRightMove();
+      this.#hero.setView(this.getArrowButtonContext());
     };
+
+    const arrowUp = this.keyboardProcessor.getButton("ArrowUp");
+    arrowUp.executeDown = function () {
+      this.#hero.setView(this.getArrowButtonContext());
+    };
+    arrowUp.executeUp = function () {
+      this.#hero.setView(this.getArrowButtonContext());
+    };
+
+    const arrowDown = this.keyboardProcessor.getButton("ArrowDown");
+    arrowDown.executeDown = function () {
+      this.#hero.setView(this.getArrowButtonContext());
+    };
+    arrowDown.executeUp = function () {
+      this.#hero.setView(this.getArrowButtonContext());
+    };
+  }
+  getArrowButtonContext() {
+    const buttonContext = {};
+    buttonContext.arrowLeft =
+      this.keyboardProcessor.isButtonPressed("ArrowLeft");
+    buttonContext.arrowRight =
+      this.keyboardProcessor.isButtonPressed("ArrowRight");
+    buttonContext.arrowUp = this.keyboardProcessor.isButtonPressed("ArrowUp");
+    buttonContext.arrowDown =
+      this.keyboardProcessor.isButtonPressed("ArrowDown");
+    return buttonContext;
   }
 }

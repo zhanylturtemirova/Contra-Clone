@@ -74,7 +74,7 @@ export default class HeroView extends Container {
     switch (direction) {
       case 1:
       case -1:
-        this.#rootNode.scale.x *= direction;
+        this.#rootNode.scale.x = direction;
     }
   }
 

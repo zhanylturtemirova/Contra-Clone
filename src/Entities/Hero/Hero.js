@@ -21,10 +21,15 @@ export default class Hero {
   };
   #state = States.Stay;
 
+  #isLay = false;
+  #isStayUp = false;
+
   #view;
   constructor(stage) {
     this.#view = new HeroView();
     stage.addChild(this.#view);
+    this.#state = States.Jump;
+    this.#view.showJump();
   }
   get collisionBox() {
     return this.#view.collisionBox;
@@ -45,7 +50,10 @@ export default class Hero {
     this.#velocityX = this.#movement.x * this.#SPEED;
     this.x += this.#velocityX;
 
-    if (this.#velocityY > 0 && this.isJumpState()) {
+    if (this.#velocityY > 0) {
+      if (!(this.#state == States.Jump || this.#state == States.FlyDown)) {
+        this.#view.showFall();
+      }
       this.#state = States.FlyDown;
     }
 
@@ -53,8 +61,17 @@ export default class Hero {
     this.y += this.#velocityY;
   }
   stay(platformY) {
-    this.#velocityY = 0;
+    if (this.#state == States.Jump || this.#state == States.FlyDown) {
+      const buttonContextMock = {};
+      buttonContextMock.arrowLeft = this.#movement.x == -1;
+      buttonContextMock.arrowRight = this.#movement.x == 1;
+      buttonContextMock.arrowDown = this.#isLay;
+      buttonContextMock.arrowUp = this.#isStayUp;
+      this.#state = States.Stay;
+      this.setView(buttonContextMock);
+    }
     this.#state = States.Stay;
+    this.#velocityY = 0;
     this.y = platformY - this.#view.collisionBox.height;
   }
   jump() {
@@ -63,16 +80,18 @@ export default class Hero {
     }
     this.#state = States.Jump;
     this.#velocityY -= this.#JUMP_FORCE;
+    this.#view.showJump();
   }
   throwDown() {
     this.#state = States.Jump;
+    this.#view.showFall();
   }
   isJumpState() {
     return this.#state == States.Jump;
   }
   startRightMove() {
     this.#directionContext.right = 1;
-    if (this.#directionContext.left > 0) {
+    if (this.#directionContext.left < 0) {
       this.#movement.x = 0;
       return;
     }
@@ -80,10 +99,12 @@ export default class Hero {
   }
   startLeftMove() {
     this.#directionContext.left = -1;
+
     if (this.#directionContext.right > 0) {
       this.#movement.x = 0;
       return;
     }
+
     this.#movement.x = -1;
   }
 
@@ -95,5 +116,30 @@ export default class Hero {
   stopRightMove() {
     this.#directionContext.right = 0;
     this.#movement.x = this.#directionContext.left;
+  }
+  setView(buttonContext) {
+    this.#view.flip(this.#movement.x);
+    this.#isLay = buttonContext.arrowDown;
+    this.#isStayUp = buttonContext.arrowUp;
+    if (this.isJumpState() || this.#state == States.FlyDown) {
+      return;
+    }
+    if (buttonContext.arrowLeft || buttonContext.arrowRight) {
+      if (buttonContext.arrowUp) {
+        this.#view.showRunUp();
+      } else if (buttonContext.arrowDown) {
+        this.#view.showRunDown();
+      } else {
+        this.#view.showRun();
+      }
+    } else {
+      if (buttonContext.arrowUp) {
+        this.#view.showStayUp();
+      } else if (buttonContext.arrowDown) {
+        this.#view.showLay();
+      } else {
+        this.#view.showStay();
+      }
+    }
   }
 }
